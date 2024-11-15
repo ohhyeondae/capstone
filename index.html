@@ -1,133 +1,109 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Excel Upload</title>
-  <style>
-    body {{
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #f4f4f9;
-    }}
-    .container {{
-      text-align: center;
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }}
-    input[type="file"] {{
-      margin-bottom: 15px;
-    }}
-    button {{
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }}
-    button:hover {{
-      background-color: #0056b3;
-    }}
-    #message {{
-      margin-top: 10px;
-      font-size: 1rem;
-      color: green;
-    }}
-    img {{
-      max-width: 100%;
-      height: auto;
-      margin-top: 20px;
-      border-radius: 8px;
-    }}
-    h1 {{
-      margin-bottom: 20px;
-      color: #333;
-    }}
-    .download-link {{
-      display: block;
-      margin-top: 15px;
-      text-decoration: none;
-      color: #007bff;
-      font-weight: bold;
-    }}
-    .download-link:hover {{
-      color: #0056b3;
-    }}
-    .menu {{
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }}
-    .menu a {{
-      text-decoration: none;
-      color: #007bff;
-      font-weight: bold;
-    }}
-    .menu a:hover {{
-      color: #0056b3;
-    }}
-    .upload-label {{
-      margin-bottom: 10px;
-      font-weight: bold;
-      color: #333;
-    }}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>재고 수량 입력 및 파일 업로드</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .add-button, .next-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .add-button:hover, .next-button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+        .upload-section {
+            text-align: center;
+            margin: 20px auto;
+        }
+        .upload-section a {
+            text-decoration: none;
+            color: white;
+            background-color: #28a745;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+        .upload-section a:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>매출 데이터 기반 재고 예측 프로그램</h1>
-    
-    <!-- 업로드 라벨 -->
-    <label for="fileInput" class="upload-label">이전 판매 카드내역 데이터 업로드</label>
-    
-    <!-- 파일 업로드 메뉴 -->
-    <form id="uploadForm" enctype="multipart/form-data">
-      <input type="file" id="fileInput" name="excelFile" accept=".xlsx, .xls, .csv">
-      <button type="submit">업로드</button>
-    </form>
-
-    <p id="message"></p>
-    <img src="Vanding Machine.png" alt="자판기 이미지">
-
-    <!-- 메뉴 -->
-    <div class="menu">
-      <a href="Upload_format.csv" download>CSV 포맷 다운로드</a>
+    <div id="step1">
+        <h1 style="text-align: center;">현재 품목 및 재고수량 입력</h1>
+        <table id="inventoryTable">
+            <thead>
+                <tr>
+                    <th>품목명</th>
+                    <th>재고수량</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 행이 동적으로 추가됩니다 -->
+            </tbody>
+        </table>
+        <button class="add-button" onclick="addRow()">+ 행 추가</button>
+        <button class="next-button" onclick="goToStep2()">다음</button>
     </div>
-  </div>
 
-  <script>
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {{
-      e.preventDefault();
-      const fileInput = document.getElementById('fileInput');
-      const formData = new FormData();
-      formData.append('excelFile', fileInput.files[0]);
+    <div id="step2" class="hidden">
+        <h1 style="text-align: center;">예전 판매 이력 데이터 업로드</h1>
+        <div class="upload-section">
+            <p>아래 버튼을 눌러 포맷 파일을 다운로드하세요:</p>
+            <a href="Upload_format.csv" download>포맷 파일 다운로드</a>
+            <br><br>
+            <p>파일을 선택하여 업로드하세요:</p>
+            <input type="file" id="fileUpload">
+        </div>
+    </div>
 
-      try {{
-        const response = await fetch('/upload', {{
-          method: 'POST',
-          body: formData,
-        }});
-        const result = await response.json();
-        document.getElementById('message').textContent = result.message;
-      }} catch (error) {{
-        document.getElementById('message').textContent = '업로드 실패!';
-      }}
-    }});
-  </script>
+    <script>
+        function addRow() {
+            const table = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+
+            const itemCell = newRow.insertCell(0);
+            const quantityCell = newRow.insertCell(1);
+            const actionCell = newRow.insertCell(2);
+
+            itemCell.innerHTML = '<input type="text" placeholder="품목명">';
+            quantityCell.innerHTML = '<input type="number" placeholder="재고수량">';
+            actionCell.innerHTML = '<button onclick="deleteRow(this)">삭제</button>';
+        }
+
+        function deleteRow(button) {
+            const row = button.parentElement.parentElement;
+            row.parentElement.removeChild(row);
+        }
+
+        function goToStep2() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        }
+    </script>
 </body>
 </html>
