@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -100,6 +98,8 @@
     </div>
 
     <script>
+        let inventoryData = []; // Step1의 품목명 및 수량 저장
+
         function addRow() {
             const table = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0];
             const newRow = table.insertRow();
@@ -121,31 +121,38 @@
         function goToStep2() {
             document.getElementById('step1').classList.add('hidden');
             document.getElementById('step2').classList.remove('hidden');
+
+            // Step1 데이터를 배열에 저장
+            const rows = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            inventoryData = [];
+            for (let row of rows) {
+                const itemName = row.getElementsByTagName('input')[0].value;
+                const quantity = row.getElementsByTagName('input')[1].value;
+                if (itemName && quantity) {
+                    inventoryData.push({ itemName, quantity });
+                }
+            }
         }
 
         function goToStep3() {
-            // Step1에서 입력된 데이터를 가져와 Step3에 추가
-            const inventoryTable = document.getElementById('inventoryTable');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+
             const forecastTable = document.getElementById('forecastTable').getElementsByTagName('tbody')[0];
             forecastTable.innerHTML = ""; // 기존 내용 초기화
 
-            const rows = inventoryTable.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-            for (let i = 0; i < rows.length; i++) {
-                const itemName = rows[i].getElementsByTagName('input')[0].value;
-                const quantity = rows[i].getElementsByTagName('input')[1].value;
-
+            for (let item of inventoryData) {
                 const newRow = forecastTable.insertRow();
 
                 const itemCell = newRow.insertCell(0);
                 const quantityCell = newRow.insertCell(1);
                 const forecastCell = newRow.insertCell(2);
 
-                itemCell.textContent = itemName;
-                quantityCell.textContent = quantity;
+                itemCell.textContent = item.itemName;
+                quantityCell.textContent = item.quantity;
 
-                // 예측 수량을 표 형태로 표시
-                const forecastTable = document.createElement('table');
-                forecastTable.innerHTML = `
+                const forecastInnerTable = document.createElement('table');
+                forecastInnerTable.innerHTML = `
                     <thead>
                         <tr>
                             <th>날짜</th>
@@ -153,20 +160,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>+1일</td><td>${parseInt(quantity) + 10}</td></tr>
-                        <tr><td>+2일</td><td>${parseInt(quantity) + 20}</td></tr>
-                        <tr><td>+3일</td><td>${parseInt(quantity) + 30}</td></tr>
-                        <tr><td>+4일</td><td>${parseInt(quantity) + 40}</td></tr>
-                        <tr><td>+5일</td><td>${parseInt(quantity) + 50}</td></tr>
-                        <tr><td>+6일</td><td>${parseInt(quantity) + 60}</td></tr>
-                        <tr><td>+7일</td><td>${parseInt(quantity) + 70}</td></tr>
+                        <tr><td>+1일</td><td>${parseInt(item.quantity) + 10}</td></tr>
+                        <tr><td>+2일</td><td>${parseInt(item.quantity) + 20}</td></tr>
+                        <tr><td>+3일</td><td>${parseInt(item.quantity) + 30}</td></tr>
+                        <tr><td>+4일</td><td>${parseInt(item.quantity) + 40}</td></tr>
+                        <tr><td>+5일</td><td>${parseInt(item.quantity) + 50}</td></tr>
+                        <tr><td>+6일</td><td>${parseInt(item.quantity) + 60}</td></tr>
+                        <tr><td>+7일</td><td>${parseInt(item.quantity) + 70}</td></tr>
                     </tbody>
                 `;
-                forecastCell.appendChild(forecastTable);
+                forecastCell.appendChild(forecastInnerTable);
             }
-
-            document.getElementById('step2').classList.add('hidden');
-            document.getElementById('step3').classList.remove('hidden');
         }
     </script>
 </body>
