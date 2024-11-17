@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -18,7 +19,7 @@
         th {
             background-color: #f4f4f4;
         }
-        .add-button, .next-button {
+        .add-button, .next-button, .prev-button {
             display: block;
             margin: 20px auto;
             padding: 10px 20px;
@@ -28,25 +29,11 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        .add-button:hover, .next-button:hover {
+        .add-button:hover, .next-button:hover, .prev-button:hover {
             background-color: #0056b3;
         }
         .hidden {
             display: none;
-        }
-        .upload-section {
-            text-align: center;
-            margin: 20px auto;
-        }
-        .upload-section a {
-            text-decoration: none;
-            color: white;
-            background-color: #28a745;
-            padding: 10px 20px;
-            border-radius: 5px;
-        }
-        .upload-section a:hover {
-            background-color: #218838;
         }
     </style>
 </head>
@@ -78,6 +65,7 @@
             <p>파일을 선택하여 업로드하세요:</p>
             <input type="file" id="fileUpload">
         </div>
+        <button class="prev-button" onclick="goToStep1()">이전</button>
         <button class="next-button" onclick="goToStep3()">다음</button>
     </div>
 
@@ -95,10 +83,11 @@
                 <!-- Step1에서 입력된 품목명이 여기 동적으로 추가됨 -->
             </tbody>
         </table>
+        <button class="prev-button" onclick="goToStep2()">이전</button>
     </div>
 
     <script>
-        let inventoryData = []; // Step1의 품목명 및 수량 저장
+        let inventoryData = []; // Step1에서 입력된 데이터를 저장
 
         function addRow() {
             const table = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0];
@@ -118,13 +107,20 @@
             row.parentElement.removeChild(row);
         }
 
+        function goToStep1() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+
         function goToStep2() {
+            // Step1 또는 Step3에서 Step2로 이동
             document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
             document.getElementById('step2').classList.remove('hidden');
 
             // Step1 데이터를 배열에 저장
             const rows = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-            inventoryData = [];
+            inventoryData = []; // 이전 데이터를 초기화
             for (let row of rows) {
                 const itemName = row.getElementsByTagName('input')[0].value;
                 const quantity = row.getElementsByTagName('input')[1].value;
@@ -138,10 +134,11 @@
             document.getElementById('step2').classList.add('hidden');
             document.getElementById('step3').classList.remove('hidden');
 
+            // Step3에 데이터 표시
             const forecastTable = document.getElementById('forecastTable').getElementsByTagName('tbody')[0];
-            forecastTable.innerHTML = ""; // 기존 내용 초기화
+            forecastTable.innerHTML = ""; // 기존 데이터를 초기화
 
-            for (let item of inventoryData) {
+            inventoryData.forEach(item => {
                 const newRow = forecastTable.insertRow();
 
                 const itemCell = newRow.insertCell(0);
@@ -170,7 +167,7 @@
                     </tbody>
                 `;
                 forecastCell.appendChild(forecastInnerTable);
-            }
+            });
         }
     </script>
 </body>
