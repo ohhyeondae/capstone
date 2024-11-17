@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>재고 수량 입력 및 파일 업로드</title>
+    <style>
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .add-button, .next-button, .prev-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .add-button:hover, .next-button:hover, .prev-button:hover {
+            background-color: #0056b3;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="step1">
+        <h1 style="text-align: center;">현재 품목 및 재고수량 입력</h1>
+        <table id="inventoryTable">
+            <thead>
+                <tr>
+                    <th>품목명</th>
+                    <th>재고수량</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 행이 동적으로 추가됩니다 -->
+            </tbody>
+        </table>
+        <button class="add-button" onclick="addRow()">+ 행 추가</button>
+        <button class="next-button" onclick="goToStep2()">다음</button>
+    </div>
+
+    <div id="step2" class="hidden">
+        <h1 style="text-align: center;">예전 판매 이력 데이터 업로드</h1>
+        <div class="upload-section">
+            <p>아래 버튼을 눌러 포맷 파일을 다운로드하세요:</p>
+            <a href="Upload_format.csv" download>포맷 파일 다운로드</a>
+            <br><br>
+            <p>파일을 선택하여 업로드하세요:</p>
+            <input type="file" id="fileUpload">
+        </div>
+        <button class="prev-button" onclick="goToStep1()">이전</button>
+        <button class="next-button" onclick="goToStep3()">다음</button>
+    </div>
+
+    <div id="step3" class="hidden">
+        <h1 style="text-align: center;">재고 현황 및 예측 수량</h1>
+        <table id="forecastTable">
+            <thead>
+                <tr>
+                    <th>품목명</th>
+                    <th>현재 재고수량</th>
+                    <th>예측 수량 (일자별)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Step1에서 입력된 품목명이 여기 동적으로 추가됨 -->
+            </tbody>
+        </table>
+        <button class="prev-button" onclick="goToStep2()">이전</button>
+    </div>
+
+    <script>
+        let inventoryData = []; // Step1에서 입력된 데이터를 저장
+
+        function addRow() {
+            const table = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+
+            const itemCell = newRow.insertCell(0);
+            const quantityCell = newRow.insertCell(1);
+            const actionCell = newRow.insertCell(2);
+
+            itemCell.innerHTML = '<input type="text" placeholder="품목명">';
+            quantityCell.innerHTML = '<input type="number" placeholder="재고수량">';
+            actionCell.innerHTML = '<button onclick="deleteRow(this)">삭제</button>';
+        }
+
+        function deleteRow(button) {
+            const row = button.parentElement.parentElement;
+            row.parentElement.removeChild(row);
+        }
+
+        function goToStep1() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+
+        function goToStep2() {
+            // Step1 또는 Step3에서 Step2로 이동
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+
+            // Step1 데이터를 배열에 저장
+            const rows = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            inventoryData = []; // 이전 데이터를 초기화
+            for (let row of rows) {
+                const itemName = row.getElementsByTagName('input')[0].value;
+                const quantity = row.getElementsByTagName('input')[1].value;
+                if (itemName && quantity) {
+                    inventoryData.push({ itemName, quantity });
+                }
+            }
+        }
+
+        function goToStep3() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+
+            // Step3에 데이터 표시
+            const forecastTable = document.getElementById('forecastTable').getElementsByTagName('tbody')[0];
+            forecastTable.innerHTML = ""; // 기존 데이터를 초기화
+
+            inventoryData.forEach(item => {
+                const newRow = forecastTable.insertRow();
+
+                const itemCell = newRow.insertCell(0);
+                const quantityCell = newRow.insertCell(1);
+                const forecastCell = newRow.insertCell(2);
+
+                itemCell.textContent = item.itemName;
+                quantityCell.textContent = item.quantity;
+
+                const forecastInnerTable = document.createElement('table');
+                forecastInnerTable.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>날짜</th>
+                            <th>예측 수량</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>+1일</td><td>${parseInt(item.quantity) + 10}</td></tr>
+                        <tr><td>+2일</td><td>${parseInt(item.quantity) + 20}</td></tr>
+                        <tr><td>+3일</td><td>${parseInt(item.quantity) + 30}</td></tr>
+                        <tr><td>+4일</td><td>${parseInt(item.quantity) + 40}</td></tr>
+                        <tr><td>+5일</td><td>${parseInt(item.quantity) + 50}</td></tr>
+                        <tr><td>+6일</td><td>${parseInt(item.quantity) + 60}</td></tr>
+                        <tr><td>+7일</td><td>${parseInt(item.quantity) + 70}</td></tr>
+                    </tbody>
+                `;
+                forecastCell.appendChild(forecastInnerTable);
+            });
+        }
+    </script>
+</body>
+</html>
